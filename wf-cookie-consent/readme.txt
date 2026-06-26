@@ -1,10 +1,11 @@
-=== Plugin Name ===
+=== WF Cookie Consent ===
 Contributors: wunderfarm
 Donate link: https://www.wunderfarm.com
-Tags: compliance, cookie law, cookielaw, cookies, cookiebar, policy, bar, eu cookie law, cookie law banner, cookiechoices, eu privacy directive, privacy, privacy directive, cookie consent, cookieconsent, Multi language, WPML, polylang, responsive, admin, code, content, embed, google, html, integration, javascript, links, login, marketing, page, pages, plugin, simple, text, url, wordpress, law, lightweight,
-Requires at least: 3.0.1
-Tested up to: 6.5
-Stable tag: 1.2.0
+Tags: cookie consent, cookie law, gdpr, privacy, cookies
+Requires at least: 4.7
+Tested up to: 7.0
+Requires PHP: 7.0
+Stable tag: 1.2.1
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -28,6 +29,9 @@ WF Cookie Consent is the "wunderfarm-way" to show how your website complies with
 3. Multi-language support
 
 == Changelog ==
+
+= 1.2.1 =
+Housekeeping: updated readme (name, tags, WordPress 7.0 compatibility). Security hardening: stricter output escaping on the settings page, input sanitization, and a sanitize callback for stored options.
 
 = 1.2.0 =
 Removed iubenda integration.

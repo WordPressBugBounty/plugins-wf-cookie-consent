@@ -3,7 +3,7 @@
 	Plugin Name: WF Cookie Consent
 	Plugin URI: http://www.wunderfarm.com/plugins/wf-cookie-consent
 	Description: The wunderfarm-way to show how your website complies with the EU Cookie Law.
-	Version: 1.2.0
+	Version: 1.2.1
 	License: GNU General Public License v2 or later
 	License URI: http://www.gnu.org/licenses/gpl-2.0.html
 	Author: wunderfarm
@@ -12,13 +12,14 @@
 
 defined( 'ABSPATH' ) or die( 'No script kiddies please!' );
 
+define ('WFCOOKIECONSENT_VERSION', '1.2.1');
 define ('WFCOOKIECONSENT_BUYMEACOFFEE_URL', 'https://www.buymeacoffee.com/wunderfarm');
 
 /*
 * Enqueue JS
 */
 function wf_cookieconsent_scripts() {
-	wp_enqueue_script('wf-cookie-consent-cookiechoices', plugin_dir_url( __FILE__ ) . 'js/cookiechoices.min.js', array(), false, true);
+	wp_enqueue_script('wf-cookie-consent-cookiechoices', plugin_dir_url( __FILE__ ) . 'js/cookiechoices.min.js', array(), WFCOOKIECONSENT_VERSION, true);
 }
 add_action( 'wp_enqueue_scripts', 'wf_cookieconsent_scripts' );
 
@@ -97,7 +98,7 @@ function wf_cookieconsent_load() {
 
 ?>
 <script type="text/javascript">
-	window._wfCookieConsentSettings = <?php print json_encode($data) ?>;
+	window._wfCookieConsentSettings = <?php echo wp_json_encode( $data ); ?>;
 </script>
 <?php
 }
@@ -132,7 +133,7 @@ function wf_cookieconsent_options_page(){
 		<form action="options.php" method="post">
   		<?php settings_fields('wf_cookieconsent_options'); ?>
   		<?php do_settings_sections('wf-cookieconsent'); ?>
-  		<input name="Submit" type="submit" class="button button-primary" value="<?php esc_attr_e('Save Changes'); ?>" />
+  		<input name="Submit" type="submit" class="button button-primary" value="<?php esc_attr_e('Save Changes', 'wf-cookie-consent'); ?>" />
 		</form>
 	</div>
 <?php
@@ -141,20 +142,20 @@ function wf_cookieconsent_options_page(){
 // add the admin settings and such
 function wf_cookieconsent_admin_init(){
   $languages = wf_get_languages();
-	register_setting( 'wf_cookieconsent_options', 'wf_cookieconsent_options' );
+	register_setting( 'wf_cookieconsent_options', 'wf_cookieconsent_options', array( 'sanitize_callback' => 'wf_cookieconsent_sanitize_options' ) );
 
   $sectionKey = 'plugin_main';
 	add_settings_section($sectionKey, count($languages) > 1 ? esc_html__('General settings', 'wf-cookie-consent') : '', '', 'wf-cookieconsent');
 
 	add_settings_field(
     'wf_position',
-    esc_html__('Position'),
+    esc_html__('Position', 'wf-cookie-consent'),
     'wf_cookieconsent_setting_radio',
     'wf-cookieconsent',
     'plugin_main',
     array(
       'fieldname' => 'wf_position',
-      'fielddescription' => esc_html__('Choose the position for the banner', 'wf-cookie-consent'),
+      'fielddescription' => __('Choose the position for the banner', 'wf-cookie-consent'),
       'radioFields' => array( 'top' , 'bottom')
     )
   );
@@ -162,7 +163,8 @@ function wf_cookieconsent_admin_init(){
 	foreach($languages as $lang) {
     if (count($languages) > 1) {
         $sectionKey = 'plugin_main_' . $lang;
-        add_settings_section($sectionKey, esc_html__('Language specific settings: ' . $lang, 'wf-cookie-consent'), '', 'wf-cookieconsent');
+        /* translators: %s: language code (e.g. en, de, it) */
+        add_settings_section($sectionKey, sprintf( esc_html__('Language specific settings: %s', 'wf-cookie-consent'), esc_html( $lang ) ), '', 'wf-cookieconsent');
     }
     add_settings_field(
       'wf_cookietext',
@@ -217,42 +219,39 @@ add_action('admin_init', 'wf_cookieconsent_admin_init');
 
 function wf_cookieconsent_setting_input_text($args) {
 	$options = wf_cookieconsent_get_options($args['lang']);
-	$esc_value = esc_attr($options[$args['fieldname']]);
-	echo "<input id='wf_cookieconsent_options[{$args['lang']}][{$args['fieldname']}]' name='wf_cookieconsent_options[{$args['lang']}][{$args['fieldname']}]' size='40' type='text' value='{$esc_value}' />";
-	echo (empty($args['fielddescription']) ? '' :  "<p class='description'>". $args['fielddescription'] ."</p>");
+	$field = "wf_cookieconsent_options[{$args['lang']}][{$args['fieldname']}]";
+	echo "<input id='" . esc_attr( $field ) . "' name='" . esc_attr( $field ) . "' size='40' type='text' value='" . esc_attr( $options[$args['fieldname']] ) . "' />";
+	echo (empty($args['fielddescription']) ? '' :  "<p class='description'>". esc_html( $args['fielddescription'] ) ."</p>");
 }
 
 function wf_cookieconsent_setting_textarea($args) {
 	$options = wf_cookieconsent_get_options($args['lang']);
-	$esc_value = esc_attr($options[$args['fieldname']]);
-	echo "<textarea id='wf_cookieconsent_options[{$args['lang']}][{$args['fieldname']}]' name='wf_cookieconsent_options[{$args['lang']}][{$args['fieldname']}]' cols='40' rows='5'>{$esc_value}</textarea>";
-	echo (empty($args['fielddescription']) ? '' :  "<p class='description'>". $args['fielddescription'] ."</p>");
+	$field = "wf_cookieconsent_options[{$args['lang']}][{$args['fieldname']}]";
+	echo "<textarea id='" . esc_attr( $field ) . "' name='" . esc_attr( $field ) . "' cols='40' rows='5'>" . esc_textarea( $options[$args['fieldname']] ) . "</textarea>";
+	echo (empty($args['fielddescription']) ? '' :  "<p class='description'>". esc_html( $args['fielddescription'] ) ."</p>");
 }
 
 function wf_cookieconsent_setting_page_selector($args) {
 	$options = wf_cookieconsent_get_options($args['lang']);
+	$field = "wf_cookieconsent_options[{$args['lang']}][{$args['fieldname']}]";
 	$wf_page_query = new WP_Query( array(
 	     'post_type' => 'page',
-	     'suppress_filters' => true, // With this option, WPML will not use any filter
+	     'suppress_filters' => true, // phpcs:ignore WordPressVIPMinimum.Performance.WPQueryParams.SuppressFilters_suppress_filters -- needed so WPML returns pages in all languages
 	     'orderby' => 'title',
 	     'order'=>'asc',
 	     'lang'=>'all', // With this option, Polylang will return all languages
 	     'nopaging'=>true
 	 ) );
-	echo "<select name='wf_cookieconsent_options[".$args['lang']."][".$args['fieldname']."]' id='wf_cookieconsent_options[".$args['lang']."][".$args['fieldname']."]'>";
+	echo "<select name='" . esc_attr( $field ) . "' id='" . esc_attr( $field ) . "'>";
 	foreach ( $wf_page_query->posts as $post ) {
 		$wf_language_information = wf_get_language_information($post->ID);
 		if(!empty($wf_language_information)) {
 			$wf_language_information = "(" .  $wf_language_information . ")";
 		}
-		if($options[$args['fieldname']] == $post->ID) {
-		  echo "<option class='level-0' value='" . $post->ID . "' selected='selected'>" . sanitize_title($post->post_title) . " " . $wf_language_information . "</option>";
-		} else {
-		  echo "<option class='level-0' value='" . $post->ID . "'>" . sanitize_title($post->post_title) . " " . $wf_language_information . "</option>";
-		}
+		echo "<option class='level-0' value='" . esc_attr( $post->ID ) . "'" . ( ($options[$args['fieldname']] == $post->ID) ? " selected='selected'" : '' ) . ">" . esc_html( sanitize_title($post->post_title) ) . " " . esc_html( $wf_language_information ) . "</option>";
 	}
 	echo "</select>";
-	echo (empty($args['fielddescription']) ? '' :  "<p class='description'>". $args['fielddescription'] ."</p>");
+	echo (empty($args['fielddescription']) ? '' :  "<p class='description'>". esc_html( $args['fielddescription'] ) ."</p>");
 }
 
 function wf_cookieconsent_setting_radio($args) {
@@ -260,29 +259,67 @@ function wf_cookieconsent_setting_radio($args) {
 	if(empty($options[$args['fieldname']])) {
 		$options[$args['fieldname']] = '';
 	}
+	$name = "wf_cookieconsent_options[{$args['fieldname']}]";
 	echo "<fieldset>";
 	if(!empty($args['radioFields'])) {
 		foreach ($args['radioFields'] as $radioField) {
-			echo "<input type='radio' id='wf_rad_" . $radioField . "' name='wf_cookieconsent_options[{$args['fieldname']}]' value='{$radioField}'" . ($radioField == $options[$args['fieldname']] ? 'checked' : '')."><label for='wf_rad_" . $radioField . "'>" . $radioField . "</label><br />";
+			echo "<input type='radio' id='wf_rad_" . esc_attr( $radioField ) . "' name='" . esc_attr( $name ) . "' value='" . esc_attr( $radioField ) . "'" . ( ($radioField == $options[$args['fieldname']]) ? ' checked' : '' ) . "><label for='wf_rad_" . esc_attr( $radioField ) . "'>" . esc_html( $radioField ) . "</label><br />";
 		}
 	}
-	echo (empty($args['fielddescription']) ? '' :  "<p class='description'>". $args['fielddescription'] ."</p>");
+	echo (empty($args['fielddescription']) ? '' :  "<p class='description'>". esc_html( $args['fielddescription'] ) ."</p>");
 	echo "</fieldset>";
+}
+
+// sanitize the stored options before they are written to the database
+function wf_cookieconsent_sanitize_options( $input ) {
+	$output = array();
+	if ( ! is_array( $input ) ) {
+		return $output;
+	}
+	foreach ( $input as $key => $value ) {
+		if ( $key === 'wf_position' ) {
+			$output['wf_position'] = in_array( $value, array( 'top', 'bottom' ), true ) ? $value : 'bottom';
+		} elseif ( is_array( $value ) ) {
+			// per-language settings keyed by language code
+			$lang = sanitize_key( $key );
+			foreach ( $value as $subkey => $subvalue ) {
+				switch ( $subkey ) {
+					case 'wf_cookietext':
+						$output[ $lang ][ $subkey ] = sanitize_textarea_field( $subvalue );
+						break;
+					case 'wf_linkhref':
+						$output[ $lang ][ $subkey ] = is_numeric( $subvalue ) ? absint( $subvalue ) : esc_url_raw( $subvalue );
+						break;
+					default:
+						$output[ $lang ][ sanitize_key( $subkey ) ] = sanitize_text_field( $subvalue );
+						break;
+				}
+			}
+		} else {
+			$output[ sanitize_key( $key ) ] = sanitize_text_field( $value );
+		}
+	}
+	return $output;
 }
 
 
 function wf_cookieconsent_admin_notice__iubenda() {
 	global $pagenow;
-	if ($pagenow == 'options-general.php' && isset($_GET['page']) && $_GET['page'] == 'wf-cookieconsent') {
+	// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- only reading the current admin page slug to decide whether to show the notice, no form data is processed.
+	$current_page = isset( $_GET['page'] ) ? sanitize_text_field( wp_unslash( $_GET['page'] ) ) : '';
+	if ( $pagenow == 'options-general.php' && $current_page === 'wf-cookieconsent' ) {
 ?>
   <div class="notice notice-info">
 		<p>
-			<?php print sprintf( __( "<b>What do you think about our plug-in?</b>", "wf-cookie-consent" ) ); ?>
+			<strong><?php esc_html_e( 'What do you think about our plug-in?', 'wf-cookie-consent' ); ?></strong>
 			<br>
-			<?php print sprintf( __( "We hope you like it. There's just one catch: sustaining a free WordPress plug-in is quite pricey and believe us when we say we need a lot of good &#9749;&nbsp; coffee to keep it running.", "wf-cookie-consent" ) ); ?>
+			<?php esc_html_e( "We hope you like it. There's just one catch: sustaining a free WordPress plug-in is quite pricey and believe us when we say we need a lot of good ☕ coffee to keep it running.", 'wf-cookie-consent' ); ?>
 		</p>
 		<p>
-			<?php print sprintf( wp_kses( __( "We'd definitely appreciate it if you could <a href='%s' target='_blank'>offer us some coffee!</a>", "wf-cookie-consent" ), array('b'=>array(),'a'=>array('href'=>array(), 'target'=>array()))), esc_url(WFCOOKIECONSENT_BUYMEACOFFEE_URL) ); ?>
+			<?php
+				/* translators: %s: URL to the donation page */
+				echo wp_kses( sprintf( __( "We'd definitely appreciate it if you could <a href='%s' target='_blank'>offer us some coffee!</a>", 'wf-cookie-consent' ), esc_url( WFCOOKIECONSENT_BUYMEACOFFEE_URL ) ), array( 'a' => array( 'href' => array(), 'target' => array() ) ) );
+			?>
 		</p>
   </div>
 <?php
