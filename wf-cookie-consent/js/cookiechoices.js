@@ -21,29 +21,46 @@
     var dismissLinkId = 'cookieChoiceDismiss';
     var dismissIconId = 'cookieChoiceDismissIcon';
 
+    var allowedPositions = ['top', 'bottom'];
+    var allowedStyles = ['light', 'dark', 'minimal', 'card'];
+
+    function _whitelist(value, allowed, fallback) {
+        for (var i = 0; i < allowed.length; i++) {
+            if (allowed[i] === value) {
+                return value;
+            }
+        }
+        return fallback;
+    }
+
     function showCookieBar() {
         var data = window._wfCookieConsentSettings;
         if (typeof data != 'undefined' && typeof data.wf_linkhref != 'undefined') {
-            data.styles = 'position:fixed; width:100%; background-color:#EEEEEE; background-color:rgba(238, 238, 238, 0.9); margin:0; left:0; ' + data.wf_position + ':0; padding:4px; z-index:1000; text-align:center;';
+            var appearance = {
+                position: _whitelist(data.wf_position, allowedPositions, 'bottom'),
+                style: _whitelist(data.wf_style, allowedStyles, 'light'),
+                autoDark: !!data.wf_auto_dark
+            };
             _showCookieConsent(
                 htmlDecode(data.wf_cookietext),
                 htmlDecode(data.wf_dismisstext),
                 htmlDecode(data.wf_linktext),
                 data.wf_linkhref,
-                data.styles,
+                appearance,
                 false
             );
         }
     }
 
-    function _createHeaderElement(cookieText, dismissText, linkText, linkHref, styles) {
-        var butterBarStyles = styles;
+    function _createHeaderElement(cookieText, dismissText, linkText, linkHref, appearance) {
         var cookieConsentElement = document.createElement('div');
         var wrapper = document.createElement('div');
-        wrapper.style.cssText = "padding-right: 50px;";
+        wrapper.className = 'wf-cc__inner';
 
         cookieConsentElement.id = cookieConsentId;
-        cookieConsentElement.style.cssText = butterBarStyles;
+        cookieConsentElement.className = 'wf-cc wf-cc--' + appearance.position +
+            ' wf-cc--theme-' + appearance.style +
+            (appearance.autoDark ? ' wf-cc--auto-dark' : '');
 
         wrapper.appendChild(_createConsentText(cookieText));
         if (!!linkText && !!linkHref) {
@@ -58,29 +75,21 @@
     }
 
     function _createDialogElement(cookieText, dismissText, linkText, linkHref) {
-        var glassStyle = 'position:fixed;width:100%;height:100%;z-index:999;' +
-            'top:0;left:0;opacity:0.5;filter:alpha(opacity=50);' +
-            'background-color:#ccc;';
-        var dialogStyle = 'z-index:1000;position:fixed;left:50%;top:50%';
-        var contentStyle = 'position:relative;left:-50%;margin-top:-25%;' +
-            'background-color:#fff;padding:20px;box-shadow:4px 4px 25px #888;';
-
         var cookieConsentElement = document.createElement('div');
         cookieConsentElement.id = cookieConsentId;
+        cookieConsentElement.className = 'wf-cc';
 
         var glassPanel = document.createElement('div');
-        glassPanel.style.cssText = glassStyle;
+        glassPanel.className = 'wf-cc__glass';
 
         var content = document.createElement('div');
-        content.style.cssText = contentStyle;
+        content.className = 'wf-cc__content';
 
         var dialog = document.createElement('div');
-        dialog.style.cssText = dialogStyle;
+        dialog.className = 'wf-cc__dialog';
 
         var dismissLink = _createDismissLink(dismissText);
-        dismissLink.style.display = 'block';
-        dismissLink.style.textAlign = 'right';
-        dismissLink.style.marginTop = '8px';
+        dismissLink.className += ' wf-cc__dismiss--block';
 
         content.appendChild(_createConsentText(cookieText));
         if (!!linkText && !!linkHref) {
@@ -115,7 +124,7 @@
         _setElementText(dismissLink, dismissText);
         dismissLink.id = dismissLinkId;
         dismissLink.href = '#';
-        dismissLink.style.marginLeft = '24px';
+        dismissLink.className = 'wf-cc__dismiss';
         return dismissLink;
     }
 
@@ -123,7 +132,7 @@
         var dismissIcon = document.createElement('a');
         dismissIcon.id = dismissIconId;
         dismissIcon.href = '#';
-        dismissIcon.style.cssText = 'width: 50px; height: 100%; background-size: 20px; display: inline-block; position: absolute; right: 0px; top: 0px; background-position: 34% 50%; background-color: #CCCCCC; background-color: rgba(204, 204, 204, 0.6); background-repeat: no-repeat; background-image: url(data:image/png;base64,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);';
+        dismissIcon.className = 'wf-cc__close';
         return dismissIcon;
     }
 
@@ -133,7 +142,7 @@
         infoLink.href = linkHref;
         infoLink.target = '_blank';
         infoLink.rel = 'noopener';
-        infoLink.style.marginLeft = '8px';
+        infoLink.className = 'wf-cc__link';
         return infoLink;
     }
 
@@ -143,12 +152,12 @@
         return false;
     }
 
-    function _showCookieConsent(cookieText, dismissText, linkText, linkHref, styles, isDialog) {
+    function _showCookieConsent(cookieText, dismissText, linkText, linkHref, appearance, isDialog) {
         if (_shouldDisplayConsent()) {
             _removeCookieConsent();
             var consentElement = (isDialog) ?
                 _createDialogElement(cookieText, dismissText, linkText, linkHref) :
-                _createHeaderElement(cookieText, dismissText, linkText, linkHref, styles);
+                _createHeaderElement(cookieText, dismissText, linkText, linkHref, appearance);
             var fragment = document.createDocumentFragment();
             fragment.appendChild(consentElement);
             document.body.appendChild(fragment.cloneNode(true));
@@ -158,11 +167,15 @@
     }
 
     function showCookieConsentBar(cookieText, dismissText, linkText, linkHref) {
-        _showCookieConsent(cookieText, dismissText, linkText, linkHref, false);
+        _showCookieConsent(cookieText, dismissText, linkText, linkHref, {
+            position: 'bottom',
+            style: 'light',
+            autoDark: false
+        }, false);
     }
 
     function showCookieConsentDialog(cookieText, dismissText, linkText, linkHref) {
-        _showCookieConsent(cookieText, dismissText, linkText, linkHref, true);
+        _showCookieConsent(cookieText, dismissText, linkText, linkHref, null, true);
     }
 
     function _removeCookieConsent() {

@@ -5,7 +5,7 @@ Tags: cookie consent, cookie law, gdpr, privacy, cookies
 Requires at least: 4.7
 Tested up to: 7.0
 Requires PHP: 7.0
-Stable tag: 1.2.1
+Stable tag: 1.3
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -29,6 +29,9 @@ WF Cookie Consent is the "wunderfarm-way" to show how your website complies with
 3. Multi-language support
 
 == Changelog ==
+
+= 1.3 =
+New: choose from ready-made banner styles (Light, Dark, Minimal, Card) with optional automatic dark mode that follows the visitor's browser setting, plus optional custom colors. All styling moved from inline CSS in JavaScript to a proper enqueued stylesheet using CSS classes and custom properties - no inline styles and no !important. The close button is now pure CSS instead of an embedded image.
 
 = 1.2.1 =
 Housekeeping: updated readme (name, tags, WordPress 7.0 compatibility). Security hardening: stricter output escaping on the settings page, input sanitization, and a sanitize callback for stored options.

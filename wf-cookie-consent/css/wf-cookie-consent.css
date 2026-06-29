@@ -1,0 +1,193 @@
+/*
+ * WF Cookie Consent - banner styles
+ *
+ * All styling lives here (no inline styles in the markup, no !important).
+ * Colors are driven by CSS custom properties so themes and the optional
+ * custom colors can override them without specificity fights.
+ */
+
+/* ---------------------------------------------------------------------------
+ * Base layout + default (light) palette
+ * ------------------------------------------------------------------------- */
+.wf-cc {
+	--wf-cc-bg: #eeeeee;
+	--wf-cc-bg-alpha: rgba(238, 238, 238, 0.9);
+	--wf-cc-text: #222222;
+	--wf-cc-accent: #0a6cff;
+	--wf-cc-radius: 0;
+	--wf-cc-shadow: none;
+	--wf-cc-margin: 0;
+
+	position: fixed;
+	left: 0;
+	width: 100%;
+	margin: var(--wf-cc-margin);
+	padding: 4px;
+	z-index: 1000;
+	text-align: center;
+	box-sizing: border-box;
+	background-color: var(--wf-cc-bg); /* fallback for browsers without rgba */
+	background-color: var(--wf-cc-bg-alpha);
+	color: var(--wf-cc-text);
+	border-radius: var(--wf-cc-radius);
+	box-shadow: var(--wf-cc-shadow);
+}
+
+/* Position */
+.wf-cc--top {
+	top: 0;
+}
+
+.wf-cc--bottom {
+	bottom: 0;
+}
+
+/* Inner wrapper keeps text clear of the close button */
+.wf-cc__inner {
+	padding-right: 50px;
+}
+
+/* Policy link */
+.wf-cc__link {
+	margin-left: 8px;
+	color: var(--wf-cc-accent);
+}
+
+/* Textual dismiss link */
+.wf-cc__dismiss {
+	margin-left: 24px;
+	color: var(--wf-cc-accent);
+	cursor: pointer;
+}
+
+/* ---------------------------------------------------------------------------
+ * Close button (pure CSS "x", no image)
+ * ------------------------------------------------------------------------- */
+.wf-cc__close {
+	position: absolute;
+	right: 0;
+	top: 0;
+	width: 50px;
+	height: 100%;
+	display: inline-block;
+	cursor: pointer;
+}
+
+.wf-cc__close::before,
+.wf-cc__close::after {
+	content: "";
+	position: absolute;
+	left: 50%;
+	top: 50%;
+	width: 18px;
+	height: 2px;
+	background: var(--wf-cc-text);
+	transform-origin: center;
+}
+
+.wf-cc__close::before {
+	transform: translate(-50%, -50%) rotate(45deg);
+}
+
+.wf-cc__close::after {
+	transform: translate(-50%, -50%) rotate(-45deg);
+}
+
+/* ---------------------------------------------------------------------------
+ * Themes (override custom properties only)
+ * ------------------------------------------------------------------------- */
+
+/* Light = current look, default. Variables already defined on .wf-cc. */
+
+/* Dark */
+.wf-cc--theme-dark {
+	--wf-cc-bg: #1e1e1e;
+	--wf-cc-bg-alpha: rgba(30, 30, 30, 0.92);
+	--wf-cc-text: #f0f0f0;
+	--wf-cc-accent: #5aa9ff;
+}
+
+/* Minimal / flat: full opacity, no shadow, no radius */
+.wf-cc--theme-minimal {
+	--wf-cc-bg: #ffffff;
+	--wf-cc-bg-alpha: #ffffff;
+	--wf-cc-text: #222222;
+	--wf-cc-accent: #0a6cff;
+	--wf-cc-radius: 0;
+	--wf-cc-shadow: none;
+}
+
+/* Card / rounded: floating box with margin, radius and soft shadow */
+.wf-cc--theme-card {
+	--wf-cc-bg: #ffffff;
+	--wf-cc-bg-alpha: #ffffff;
+	--wf-cc-text: #222222;
+	--wf-cc-accent: #0a6cff;
+	--wf-cc-radius: 10px;
+	--wf-cc-shadow: 0 6px 24px rgba(0, 0, 0, 0.18);
+	--wf-cc-margin: 16px;
+}
+
+.wf-cc--theme-card {
+	width: auto;
+	max-width: 720px;
+}
+
+.wf-cc--theme-card.wf-cc--top,
+.wf-cc--theme-card.wf-cc--bottom {
+	left: 50%;
+	transform: translateX(-50%);
+}
+
+/* ---------------------------------------------------------------------------
+ * Automatic dark mode (only when enabled via .wf-cc--auto-dark)
+ * The explicit Dark theme is already dark and is intentionally left out.
+ * ------------------------------------------------------------------------- */
+@media (prefers-color-scheme: dark) {
+	.wf-cc--auto-dark.wf-cc--theme-light,
+	.wf-cc--auto-dark.wf-cc--theme-minimal,
+	.wf-cc--auto-dark.wf-cc--theme-card {
+		--wf-cc-bg: #1e1e1e;
+		--wf-cc-bg-alpha: rgba(30, 30, 30, 0.92);
+		--wf-cc-text: #f0f0f0;
+		--wf-cc-accent: #5aa9ff;
+	}
+}
+
+/* ---------------------------------------------------------------------------
+ * Dialog mode (legacy display path, kept consistent)
+ * ------------------------------------------------------------------------- */
+.wf-cc__glass {
+	position: fixed;
+	width: 100%;
+	height: 100%;
+	z-index: 999;
+	top: 0;
+	left: 0;
+	opacity: 0.5;
+	background-color: #cccccc;
+}
+
+.wf-cc__dialog {
+	z-index: 1000;
+	position: fixed;
+	left: 50%;
+	top: 50%;
+}
+
+.wf-cc__content {
+	position: relative;
+	left: -50%;
+	margin-top: -25%;
+	background-color: var(--wf-cc-bg);
+	color: var(--wf-cc-text);
+	padding: 20px;
+	box-shadow: 4px 4px 25px #888888;
+}
+
+.wf-cc__dismiss--block {
+	display: block;
+	text-align: right;
+	margin-top: 8px;
+	margin-left: 0;
+}
